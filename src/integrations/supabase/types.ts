@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analysis_history: {
+        Row: {
+          classification: string
+          created_at: string
+          detected_issues_count: number | null
+          email_snippet: string | null
+          id: string
+          severity_score: number
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          classification: string
+          created_at?: string
+          detected_issues_count?: number | null
+          email_snippet?: string | null
+          id?: string
+          severity_score: number
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          classification?: string
+          created_at?: string
+          detected_issues_count?: number | null
+          email_snippet?: string | null
+          id?: string
+          severity_score?: number
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
