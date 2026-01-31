@@ -1,11 +1,36 @@
-import { Link, useLocation } from "react-router-dom";
-import { Shield, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Shield, Menu, X, LogIn, LogOut, History, User } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out successfully");
+    navigate("/");
+  };
 
   const navLinks = [
     { to: "/", label: "Home" },
@@ -43,14 +68,48 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
+            {user && (
+              <Link
+                to="/history"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  isActive("/history")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                <History className="h-4 w-4" />
+                History
+              </Link>
+            )}
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/analyze">
-              <Button size="sm" className="cyber-glow">
-                Start Analysis
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  <span className="max-w-[150px] truncate">{user.email}</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/analyze">
+                  <Button size="sm" className="cyber-glow">
+                    Start Analysis
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -80,9 +139,53 @@ const Header = () => {
                   {link.label}
                 </Link>
               ))}
-              <Link to="/analyze" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full mt-2">Start Analysis</Button>
-              </Link>
+              {user && (
+                <Link
+                  to="/history"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                    isActive("/history")
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  <History className="h-4 w-4" />
+                  History
+                </Link>
+              )}
+              <div className="pt-2 border-t border-border mt-2">
+                {user ? (
+                  <>
+                    <div className="px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      {user.email}
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full mt-2 gap-2"
+                      onClick={() => {
+                        handleSignOut();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full gap-2">
+                        <LogIn className="h-4 w-4" />
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/analyze" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full mt-2">Start Analysis</Button>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </nav>
         )}
