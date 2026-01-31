@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,6 +65,26 @@ serve(async (req) => {
         JSON.stringify({ error: "AI service not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Get user info from auth header if available
+    let userId: string | null = null;
+    let userEmail: string | null = null;
+    
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      
+      const token = authHeader.replace("Bearer ", "");
+      const { data: claimsData } = await supabaseClient.auth.getClaims(token);
+      if (claimsData?.claims) {
+        userId = claimsData.claims.sub as string;
+        userEmail = claimsData.claims.email as string;
+      }
     }
 
     const userMessage = `Analyze the following email for phishing and spoofing threats:
@@ -151,6 +172,31 @@ Provide your analysis in the specified JSON format only.`;
     }
 
     console.log("Analysis complete:", analysisResult.classification, "Score:", analysisResult.severityScore);
+
+    // Save to analysis_history if user is authenticated
+    if (userId) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+        const emailSnippet = emailContent.substring(0, 100).replace(/\s+/g, " ");
+        
+        await adminClient.from("analysis_history").insert({
+          user_id: userId,
+          user_email: userEmail,
+          email_snippet: emailSnippet,
+          classification: analysisResult.classification,
+          severity_score: analysisResult.severityScore,
+          detected_issues_count: analysisResult.detectedIssues?.length || 0,
+        });
+        
+        console.log("Analysis saved to history for user:", userId);
+      } catch (saveError) {
+        console.error("Failed to save analysis history:", saveError);
+        // Don't fail the request if saving history fails
+      }
+    }
 
     return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
