@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Layout from "@/components/Layout";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const AnalyzeEmail = () => {
   const navigate = useNavigate();
@@ -18,25 +19,48 @@ const AnalyzeEmail = () => {
     setEmailHeader("");
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!emailContent.trim()) {
       toast.error("Please paste email content to analyze");
       return;
     }
 
     setIsAnalyzing(true);
-    
-    // Simulate analysis delay
-    setTimeout(() => {
-      // Store analysis data for the results page
-      const analysisData = {
-        emailContent,
-        emailHeader,
-        timestamp: new Date().toISOString(),
-      };
-      sessionStorage.setItem("analysisData", JSON.stringify(analysisData));
+
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-email", {
+        body: { emailContent, emailHeader },
+      });
+
+      if (error) {
+        console.error("Analysis error:", error);
+        toast.error(error.message || "Failed to analyze email");
+        setIsAnalyzing(false);
+        return;
+      }
+
+      if (data.error) {
+        toast.error(data.error);
+        setIsAnalyzing(false);
+        return;
+      }
+
+      // Store analysis results for the results page
+      sessionStorage.setItem("analysisResults", JSON.stringify(data));
+      sessionStorage.setItem(
+        "analysisData",
+        JSON.stringify({
+          emailContent,
+          emailHeader,
+          timestamp: new Date().toISOString(),
+        })
+      );
       navigate("/results");
-    }, 2000);
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      toast.error("An unexpected error occurred");
+      setIsAnalyzing(false);
+    }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,7 +154,7 @@ const AnalyzeEmail = () => {
                 {isAnalyzing ? (
                   <>
                     <div className="h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Analyzing...
+                    Analyzing with AI...
                   </>
                 ) : (
                   <>
