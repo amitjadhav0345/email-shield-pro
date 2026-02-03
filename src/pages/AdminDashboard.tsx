@@ -103,11 +103,18 @@ const AdminDashboard = () => {
       // Calculate stats
       const records = analysisData || [];
       const uniqueEmails = new Set(records.map(r => r.user_email).filter(Boolean));
-      const safeCount = records.filter(r => r.classification === "safe").length;
-      const suspiciousCount = records.filter(r => r.classification === "suspicious").length;
-      const phishingCount = records.filter(r => r.classification === "phishing").length;
+      // Handle both old lowercase and new proper case classifications
+      const safeCount = records.filter(r => 
+        r.classification === "safe" || r.classification === "Safe" || r.classification === "Low Risk"
+      ).length;
+      const suspiciousCount = records.filter(r => 
+        r.classification === "suspicious" || r.classification === "Medium Risk"
+      ).length;
+      const phishingCount = records.filter(r => 
+        r.classification === "phishing" || r.classification === "High Risk"
+      ).length;
       const avgSeverity = records.length > 0 
-        ? records.reduce((sum, r) => sum + r.severity_score, 0) / records.length 
+        ? records.reduce((sum, r) => sum + (r.severity_score ?? 0), 0) / records.length 
         : 0;
 
       setStats({
