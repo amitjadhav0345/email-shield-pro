@@ -25,16 +25,17 @@ interface AdminAnalysisTableProps {
 
 const AdminAnalysisTable = ({ analyses }: AdminAnalysisTableProps) => {
   const getClassificationBadge = (classification: string) => {
-    switch (classification) {
-      case "safe":
-        return <Badge className="bg-green-500 hover:bg-green-600">Safe</Badge>;
-      case "suspicious":
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">Suspicious</Badge>;
-      case "phishing":
-        return <Badge className="bg-red-500 hover:bg-red-600">Phishing</Badge>;
-      default:
-        return <Badge variant="secondary">{classification}</Badge>;
+    const lowerClassification = classification?.toLowerCase() || '';
+    if (lowerClassification === "safe" || classification === "Safe" || classification === "Low Risk") {
+      return <Badge className="bg-green-500 hover:bg-green-600">Safe</Badge>;
     }
+    if (lowerClassification === "suspicious" || classification === "Medium Risk") {
+      return <Badge className="bg-yellow-500 hover:bg-yellow-600">Suspicious</Badge>;
+    }
+    if (lowerClassification === "phishing" || classification === "High Risk") {
+      return <Badge className="bg-red-500 hover:bg-red-600">Phishing</Badge>;
+    }
+    return <Badge variant="secondary">{classification || "Unknown"}</Badge>;
   };
 
   const getSeverityColor = (score: number) => {

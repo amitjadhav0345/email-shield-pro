@@ -10,37 +10,37 @@ interface AnalysisRecord {
   email_snippet: string | null;
   classification: string;
   severity_score: number;
-  detected_issues_count: number;
+  detected_issues_count: number | null;
   created_at: string;
   user_email: string | null;
 }
 
 const getStatusIcon = (classification: string) => {
-  switch (classification) {
-    case "Safe":
-    case "Low Risk":
-      return <Shield className="h-5 w-5 text-success" />;
-    case "Medium Risk":
-      return <AlertTriangle className="h-5 w-5 text-warning" />;
-    case "High Risk":
-      return <XCircle className="h-5 w-5 text-destructive" />;
-    default:
-      return <Shield className="h-5 w-5 text-muted-foreground" />;
+  const lower = classification?.toLowerCase() || '';
+  if (lower === "safe" || classification === "Low Risk") {
+    return <Shield className="h-5 w-5 text-success" />;
   }
+  if (lower === "suspicious" || classification === "Medium Risk") {
+    return <AlertTriangle className="h-5 w-5 text-warning" />;
+  }
+  if (lower === "phishing" || classification === "High Risk") {
+    return <XCircle className="h-5 w-5 text-destructive" />;
+  }
+  return <Shield className="h-5 w-5 text-muted-foreground" />;
 };
 
 const getStatusColor = (classification: string) => {
-  switch (classification) {
-    case "Safe":
-    case "Low Risk":
-      return "border-success/50 bg-success/10";
-    case "Medium Risk":
-      return "border-warning/50 bg-warning/10";
-    case "High Risk":
-      return "border-destructive/50 bg-destructive/10";
-    default:
-      return "border-border bg-muted/10";
+  const lower = classification?.toLowerCase() || '';
+  if (lower === "safe" || classification === "Low Risk") {
+    return "border-success/50 bg-success/10";
   }
+  if (lower === "suspicious" || classification === "Medium Risk") {
+    return "border-warning/50 bg-warning/10";
+  }
+  if (lower === "phishing" || classification === "High Risk") {
+    return "border-destructive/50 bg-destructive/10";
+  }
+  return "border-border bg-muted/10";
 };
 
 const History = () => {
@@ -127,19 +127,28 @@ const History = () => {
               </div>
               <div className="cyber-card text-center">
                 <p className="text-2xl font-bold text-success">
-                  {history.filter(h => h.classification === "Safe" || h.classification === "Low Risk").length}
+                  {history.filter(h => {
+                    const lower = h.classification?.toLowerCase() || '';
+                    return lower === "safe" || h.classification === "Low Risk";
+                  }).length}
                 </p>
                 <p className="text-xs text-muted-foreground">Safe Emails</p>
               </div>
               <div className="cyber-card text-center">
                 <p className="text-2xl font-bold text-warning">
-                  {history.filter(h => h.classification === "Medium Risk").length}
+                  {history.filter(h => {
+                    const lower = h.classification?.toLowerCase() || '';
+                    return lower === "suspicious" || h.classification === "Medium Risk";
+                  }).length}
                 </p>
                 <p className="text-xs text-muted-foreground">Suspicious</p>
               </div>
               <div className="cyber-card text-center">
                 <p className="text-2xl font-bold text-destructive">
-                  {history.filter(h => h.classification === "High Risk").length}
+                  {history.filter(h => {
+                    const lower = h.classification?.toLowerCase() || '';
+                    return lower === "phishing" || h.classification === "High Risk";
+                  }).length}
                 </p>
                 <p className="text-xs text-muted-foreground">Phishing</p>
               </div>
@@ -187,9 +196,9 @@ const History = () => {
                         <Calendar className="h-3 w-3" />
                         {format(new Date(record.created_at), "MMM d, yyyy h:mm a")}
                       </span>
-                      {record.detected_issues_count > 0 && (
+                      {(record.detected_issues_count ?? 0) > 0 && (
                         <span className="text-warning">
-                          {record.detected_issues_count} issue{record.detected_issues_count > 1 ? "s" : ""} found
+                          {record.detected_issues_count} issue{(record.detected_issues_count ?? 0) > 1 ? "s" : ""} found
                         </span>
                       )}
                     </div>
