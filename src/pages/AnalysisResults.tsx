@@ -337,12 +337,12 @@ const AnalysisResults = () => {
               Security Checks
             </h3>
             <div className="grid gap-3">
-              {results.checks.map((check, index) => (
+              {results.checks && results.checks.map((check, index) => (
                 <AnalysisCheck
                   key={index}
-                  label={check.label}
-                  status={check.status as "pass" | "fail" | "warning"}
-                  description={check.description}
+                  label={check.label || "Unknown Check"}
+                  status={check.status || "unknown"}
+                  description={check.description || ""}
                 />
               ))}
             </div>
