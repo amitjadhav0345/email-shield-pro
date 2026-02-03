@@ -1,6 +1,6 @@
 import { Check, X, AlertTriangle } from "lucide-react";
 
-type CheckStatus = "pass" | "fail" | "warning";
+type CheckStatus = "pass" | "fail" | "warning" | "unknown";
 
 interface AnalysisCheckProps {
   label: string;
@@ -23,6 +23,11 @@ const statusConfig = {
     icon: AlertTriangle,
     className: "text-warning",
     bgClass: "bg-warning/10",
+  },
+  unknown: {
+    icon: AlertTriangle,
+    className: "text-muted-foreground",
+    bgClass: "bg-muted/10",
   },
 };
 
