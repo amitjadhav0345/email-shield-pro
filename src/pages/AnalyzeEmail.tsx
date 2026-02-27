@@ -128,12 +128,12 @@ const AnalyzeEmail = () => {
               <Upload className="h-5 w-5 text-muted-foreground" />
               <div className="flex-1">
                 <p className="text-sm font-medium">Upload Email File</p>
-                <p className="text-xs text-muted-foreground">Support for .eml files</p>
+                <p className="text-xs text-muted-foreground">Supports .eml, .txt, .doc, .docx, .pdf, .html, and more</p>
               </div>
               <label className="cursor-pointer">
                 <input
                   type="file"
-                  accept=".eml,.txt"
+                  accept=".eml,.txt,.doc,.docx,.pdf,.msg,.html,.htm,.csv,.json,.xml,.rtf"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
