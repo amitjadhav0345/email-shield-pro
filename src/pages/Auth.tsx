@@ -63,7 +63,8 @@ const Auth = () => {
     }
 
     toast.success("Signed in successfully!");
-    navigate("/");
+    // Navigation handled by onAuthStateChange listener
+    setIsLoading(false);
   };
 
   const handleSignUp = async () => {
