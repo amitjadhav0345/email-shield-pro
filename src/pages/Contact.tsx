@@ -32,7 +32,7 @@ const Contact = () => {
                   <Mail className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold mb-1">Email</h3>
-                <p className="text-sm text-muted-foreground">support@phishguard.com</p>
+                <p className="text-sm text-muted-foreground">jadhavamit0345@gmail.com</p>
               </div>
 
               <div className="cyber-card">
@@ -40,7 +40,7 @@ const Contact = () => {
                   <Phone className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold mb-1">Phone</h3>
-                <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
+                <p className="text-sm text-muted-foreground">+91 9054860345</p>
               </div>
 
               <div className="cyber-card">
@@ -48,7 +48,7 @@ const Contact = () => {
                   <MapPin className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold mb-1">Location</h3>
-                <p className="text-sm text-muted-foreground">Security Research Center</p>
+                <p className="text-sm text-muted-foreground">SSPU</p>
               </div>
             </div>
 
